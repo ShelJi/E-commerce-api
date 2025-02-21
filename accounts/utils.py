@@ -2,7 +2,7 @@
 Send OTP for the request phone number with the given otp.
 """
 import requests
-from cloviogo_main.settings import (SMS_API_KEY,
+from clovigo_main.settings import (SMS_API_KEY,
                                     OTP_MAX_TRY)
 import random
 from accounts.models import OTPVerifyModel

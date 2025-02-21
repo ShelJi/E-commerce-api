@@ -44,7 +44,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'cloviogo_main.urls'
+ROOT_URLCONF = 'clovigo_main.urls'
 
 TEMPLATES = [
     {
@@ -81,7 +81,7 @@ TEMPLATES = [
 # ]
 
 
-WSGI_APPLICATION = 'cloviogo_main.wsgi.application'
+WSGI_APPLICATION = 'clovigo_main.wsgi.application'
 
 DATABASES = {
     'default': {
