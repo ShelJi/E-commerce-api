@@ -8,7 +8,7 @@ from core.globalchoices import (DISTRICT_CHOICES,
                                 CUSTOMER_RANK_CHOICES,
                                 SELLER_RANK_CHOICES,
                                 DELIVERYBOY_RANK_CHOICES)
-from cloviogo_main import settings
+from clovigo_main import settings
 from core.filepath import (hash_profile,
                             hash_document,
                             hash_license)

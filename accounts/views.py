@@ -25,7 +25,7 @@ from accounts.utils import send_otp
 from django.utils import timezone
 from django.contrib.auth import authenticate
 
-from cloviogo_main.settings import OTP_MAX_TRY
+from clovigo_main.settings import OTP_MAX_TRY
 
 import random
 from datetime import timedelta
