@@ -1,9 +1,12 @@
+"""
+Supporting models for document uploads.
+"""
 from django.db import models
 from core.globalchoices import COLOR_CHOICES
 
 
 class ImageModel(models.Model):
-    img = models.ImageField(upload_to="images/")
+    img = models.ImageField(upload_to="images")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -11,7 +14,7 @@ class ImageModel(models.Model):
         return f"Image {self.id}"
 
 class FileModel(models.Model):
-    file = models.FileField(upload_to="files/")
+    file = models.FileField(upload_to="file")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

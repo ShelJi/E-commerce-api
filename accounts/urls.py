@@ -7,9 +7,7 @@ from accounts.views import (CustomerSignUpView,
                             OTPResendView,
                             SellerSignUpView,
                             DeliveryBoySignUpView,
-                            CustomerLoginView,
-                            SellerLoginView,
-                            DeliveryBoyLoginView)
+                            LoginUserView)
 
 
 app_name = "accounts"
@@ -21,7 +19,5 @@ urlpatterns = [
     path('user/otp/validate/', OTPValidateView.as_view(), name="otp_validate"),
     path('user/otp/resend/', OTPResendView.as_view(), name="otp_resend"),
 
-    path('login/customer/', CustomerLoginView.as_view(), name="customer_login"),
-    path('login/seller/', SellerLoginView.as_view(), name="seller_login"),
-    path('login/deliveryboy/', DeliveryBoyLoginView.as_view(), name="deliveryboy_login"),
+    path('login/<str:login_user>/', LoginUserView.as_view(), name="login"),
 ]
