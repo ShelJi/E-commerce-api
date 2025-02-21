@@ -11,24 +11,32 @@ from datetime import timedelta
 from rest_framework import serializers
 
 
-def send_otp(phone_no: int, otp: int) -> bool:
-    """Send OTP return boolean response."""
-    url = f"https://2factor.in/API/V1/{SMS_API_KEY}/SMS/{phone_no}/{otp}/OTP1"
-    payload = ""
-    headers = {"content-type" : "application/x-www-form-urlencoded"}
+# def send_otp(phone_no: int, otp: int) -> bool:
+#     """Send OTP return boolean response."""
+#     url = f"https://2factor.in/API/V1/{SMS_API_KEY}/SMS/{phone_no}/{otp}/OTP1"
+#     payload = ""
+#     headers = {"content-type" : "application/x-www-form-urlencoded"}
         
-    try:
-        response = requests.get(url, data=payload, headers=headers)
-        return bool(response.ok)
+#     try:
+#         response = requests.get(url, data=payload, headers=headers)
+#         return bool(response.ok)
 
-    except Exception as e:
-        print(f"When sending OTP caused {e} error")
-        return False
-    
+#     except Exception as e:
+#         print(f"When sending OTP caused {e} error")
+        # return False
 
-def generate_otp(user):
+def send_otp(phone_no: int, otp: int) -> bool:
+    """Send OTP in terminal and return boolean response."""
+    print("                             ")
+    print("                             ")
+    print(f"The OTP for the '{phone_no}' is {otp}")
+    print("                             ")
+    print("                             ")
+    return True
+
+def generate_first_otp(user):
     """Generate OTP and handling OTPVerifyModel."""
-    otp = random.randint(10000, 99999)
+    otp = random.randint(100000, 999999)
     otp_sent = send_otp(user.phone_no, otp)
     if not otp_sent:
         raise serializers.ValidationError({"otp": "Failed to send OTP. Please try again later."})
@@ -37,7 +45,7 @@ def generate_otp(user):
         user=user,
         defaults={
             "otp": otp,
-            "otp_expiry": timezone.now() + timedelta(minutes=10),
+            "otp_expiry": timezone.localtime(timezone.now()) + timedelta(minutes=10),
             "otp_max_try": OTP_MAX_TRY - 1
         }
     )
