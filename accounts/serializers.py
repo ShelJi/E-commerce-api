@@ -6,28 +6,33 @@ from accounts.models import (UserManagementModel,
                              SellerModel,
                              DeliveryBoyModel)
 from accounts.utils import (send_otp,
-                            generate_first_otp)
+                            generate_first_otp,
+                            create_otp_model_first)
 
 from datetime import timedelta
 from django.utils import timezone
 
 import random
 
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
+
 
 class UserManagementSignUpSerializer(serializers.ModelSerializer):
     """Create Custom User."""
 
     class Meta:
-        model = UserManagementModel
+        model = User
         fields = ["phone_no", "username", "password"]
-        extra_kwargs = {"password": {"write_only": True}}
+        extra_kwargs = {"password": {"write_only": True, 'min_length': 5}}
 
-    def create(self, validated_data):
+    def create(self, validated_data): 
         """
         Create and return a new UserManagementModel instance
         or return the existing user if already created.
         """
-        user = UserManagementModel.objects.create(
+        user = User.objects.create(
             phone_no=validated_data["phone_no"],
             username=validated_data["username"]
         )
@@ -37,7 +42,7 @@ class UserManagementSignUpSerializer(serializers.ModelSerializer):
 
 
 class CustomerSignUpSerializer(serializers.ModelSerializer):
-    """Create new customer and send OTP."""
+    """Create send OTP and create new customer."""
     user = UserManagementSignUpSerializer()
 
     class Meta:
@@ -45,15 +50,21 @@ class CustomerSignUpSerializer(serializers.ModelSerializer):
         fields = ["user"]
 
     def create(self, validated_data):
-        """Create Customer and send OTP."""
+        """Send OTP and create CustomerModel."""
         user_data = validated_data.pop("user")
+
+        ######################## Need to add this to verify if the user already exists or registered with this phone_no
+        # customer = CustomerModel.objects.filter(user__phone_no=user_data["phone_no"]).first()
+
+        # if customer:
+        #     if not customer.user.is_active:
+        #         raise serializers.ValidationError("User with this mobile number exists but is not verified. Please verify OTP.")
+        #     raise serializers.ValidationError("User with this mobile number already exists. Please try logging in.")
+            
+        otp = generate_first_otp(user_data["phone_no"])
         user = UserManagementSignUpSerializer().create(user_data)
-
-        customer, created = CustomerModel.objects.get_or_create(user=user, defaults=validated_data)
-
-        if created:
-            generate_first_otp(user)
-
+        create_otp_model_first(user, otp)
+        customer = CustomerModel.objects.create(user=user, **validated_data)
         return customer
 
 
@@ -66,15 +77,12 @@ class SellerSignUpSerializer(serializers.ModelSerializer):
         exclude = ["is_active", "is_otp", "clo_coin", "seller_rank", "created_at", "updated_at"]
 
     def create(self, validated_data):
-        """Create Seller and send OTP."""
+        """Send OTP and create SellerModel."""
         user_data = validated_data.pop("user")
+        otp = generate_first_otp(user_data["phone_no"])
         user = UserManagementSignUpSerializer().create(user_data)
-
-        seller, created = SellerModel.objects.get_or_create(user=user, defaults=validated_data)
-
-        if created:
-            generate_first_otp(user)
-
+        create_otp_model_first(user, otp)
+        seller = SellerModel.objects.create(user=user, **validated_data)
         return seller
 
 
@@ -87,16 +95,13 @@ class DeliveryBoySignUpSerializer(serializers.ModelSerializer):
         fields = ["license_no", "file_license", "user"]
 
     def create(self, validated_data):
-        """Create Delivery Boy and send OTP."""
+        """Send OTP and create DeliveryBoyModel."""
         user_data = validated_data.pop("user")
+        otp = generate_first_otp(user_data["phone_no"])
         user = UserManagementSignUpSerializer().create(user_data)
-
-        delivery_boy, created = DeliveryBoyModel.objects.get_or_create(user=user, defaults=validated_data)
-
-        if created:
-            generate_first_otp(user)
-
-        return delivery_boy
+        create_otp_model_first(user, otp)
+        deliveryboy = DeliveryBoyModel.objects.create(user=user, **validated_data)
+        return deliveryboy
 
 
 class OTPValidateSerializer(serializers.Serializer):
@@ -134,25 +139,23 @@ class OTPResendSerializer(serializers.Serializer):
         username = data.get("username")
 
         try:
-            user = UserManagementModel.objects.get(username=username)
+            user = User.objects.get(username=username)
                 
-        except UserManagementModel.DoesNotExist:
+        except User.DoesNotExist:
             raise serializers.ValidationError({"username": "User does not exist."})
 
-        otp, created = OTPVerifyModel.objects.get_or_create(
-            user=user,
-            defaults={"otp": random.randint(100000, 999999), 
-                      "otp_expiry": timezone.localtime(timezone.now()) + timedelta(minutes=10)}
-        )
+        try:
+            otp = OTPVerifyModel.objects.get(user=user)
+                
+        except OTPVerifyModel.DoesNotExist:
+            otp = None
 
-        if not created:
+        if otp is not None:
             if otp.otp_max_out and otp.otp_max_out > timezone.localtime(timezone.now()):
                 raise serializers.ValidationError({"otp": f"Maximum OTP request limit reached. Try again later."})
 
             if otp.otp_expiry > timezone.localtime(timezone.now()):
                 raise serializers.ValidationError({"otp": f"Already requested OTP! Try after 10 minutes."})
-
-        send_otp(user.phone_no, otp.otp)
 
         return {"user": user}
 
@@ -161,3 +164,12 @@ class LoginSerializer(serializers.Serializer):
     """Base Login Serializer for all user roles."""
     username = serializers.CharField(max_length=150)
     password = serializers.CharField(write_only=True)
+
+
+class LoginResponseSerializer(serializers.Serializer):
+    """Login response visualise for Swagger UI."""
+    refresh = serializers.CharField()
+    access = serializers.CharField()
+    user_id = serializers.IntegerField()
+    username = serializers.CharField()
+

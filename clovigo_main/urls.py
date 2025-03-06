@@ -3,6 +3,9 @@ from django.urls import include, path
 
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
 
+# from drf_spectacular_sidecar.views import SpectacularSwaggerView, SpectacularRedocView, SpectacularRapidocView
+
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),

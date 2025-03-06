@@ -4,7 +4,8 @@ from rest_framework import status
 from django.contrib.sites.shortcuts import get_current_site
 from django.urls import reverse
 from django.core.exceptions import ImproperlyConfigured
-from drf_spectacular.utils import extend_schema
+from drf_spectacular.utils import (extend_schema,
+                                   OpenApiResponse)
 
 
 class CatalogHomeView(APIView):
@@ -14,11 +15,16 @@ class CatalogHomeView(APIView):
     """
 
     @extend_schema(
-        summary="Catalog main redirector",
-        description="Catalog to redirect based on sections",
+        summary="Redirector",
+        description="Catalog main redirector",
         request=None,
+        responses={
+            200: OpenApiResponse(
+                response=None,
+            )
+        },
+        tags=["Catalog"]
     )
-
     def get(self, request):
         """
         Handles GET requests to return API documentation link dynamically.
