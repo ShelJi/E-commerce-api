@@ -27,25 +27,30 @@ from rest_framework import serializers
 
 def send_otp(phone_no: int, otp: int) -> bool:
     """Send OTP in terminal and return boolean response."""
+    result = True
     print("                             ")
     print("                             ")
-    print(f"The OTP for the '{phone_no}' is {otp}")
+    if result:
+        print(f"The OTP for the '{phone_no}' is {otp}")
     print("                             ")
     print("                             ")
-    return True
+    return result
 
-def generate_first_otp(user):
+def generate_first_otp(phone_no) -> int:
     """Generate OTP and handling OTPVerifyModel."""
     otp = random.randint(100000, 999999)
-    otp_sent = send_otp(user.phone_no, otp)
+    otp_sent = send_otp(phone_no, otp)
+
     if not otp_sent:
         raise serializers.ValidationError({"otp": "Failed to send OTP. Please try again later."})
 
-    OTPVerifyModel.objects.update_or_create(
+    return otp
+
+def create_otp_model_first(user, otp) -> None:
+    """Create OTPVerifyModel for the user."""
+    OTPVerifyModel.objects.create(
         user=user,
-        defaults={
-            "otp": otp,
-            "otp_expiry": timezone.localtime(timezone.now()) + timedelta(minutes=10),
-            "otp_max_try": OTP_MAX_TRY - 1
-        }
+        otp = otp,
+        otp_expiry = timezone.localtime(timezone.now()) + timedelta(minutes=10),
+        otp_max_try = OTP_MAX_TRY - 1
     )
