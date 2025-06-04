@@ -14,17 +14,7 @@ class CatalogHomeView(APIView):
     Returns catalog main url.
     """
 
-    @extend_schema(
-        summary="Redirector",
-        description="Catalog main redirector",
-        request=None,
-        responses={
-            200: OpenApiResponse(
-                response=None,
-            )
-        },
-        tags=["Catalog"]
-    )
+
     def get(self, request):
         """
         Handles GET requests to return API documentation link dynamically.
