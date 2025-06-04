@@ -45,7 +45,7 @@ from drf_spectacular.utils import (extend_schema,
 @extend_schema(
     summary="Register a New Customer",
     description="Creates a new customer account. The account will be inactive until verified.",
-    request=CustomerSignUpSerializer,
+    
     responses={
         201: OpenApiResponse(
             response=CustomerSignUpSerializer,
